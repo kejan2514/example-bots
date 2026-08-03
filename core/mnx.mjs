@@ -47,6 +47,7 @@ export async function connect() {
   })
   const headers = { Authorization: `Bearer ${auth.token}` }
   const user = await request('/v0/users/by-eoa/' + wallet.address)
+  console.log(`authorized ${wallet.address} (user ${user.user_id})`)
   return { wallet, provider, user, headers }
 }
 
@@ -62,17 +63,20 @@ export async function ensureFunded(ctx, minUsd = 20) {
   const bank = new Contract(contracts.addressMarginBank, [
     'function bankBalances(address) view returns (uint256)', 'function depositToBank(address,uint128) returns (bool)',
   ], ctx.wallet)
-  const amount = parseUnits(String(minUsd), Number(await collateral.decimals()))
+  const decimals = Number(await collateral.decimals())
+  const amount = parseUnits(String(minUsd), decimals)
   const held = await bank.bankBalances(ctx.wallet.address)
   const needed = held < amount ? amount - held : 0n
   if (needed) {
     // Faucet mints wallet USDM and gas, but does not deposit collateral.
     if ((await collateral.balanceOf(ctx.wallet.address)) < needed || await ctx.provider.getBalance(ctx.wallet.address) === 0n) {
+      console.log('requesting faucet funds (testnet USDM + gas; rate limited)')
       await request('/v0/faucet', { method: 'POST', headers: ctx.headers, body: '{}' })
     }
     if ((await collateral.allowance(ctx.wallet.address, contracts.addressMarginBank)) < needed) {
       await (await collateral.approve(contracts.addressMarginBank, needed)).wait()
     }
+    console.log(`depositing ${formatUnits(needed, decimals)} USDM into MarginBank`)
     await (await bank.depositToBank(ctx.wallet.address, needed)).wait()
   }
   for (let i = 0; i < 90; i++) {

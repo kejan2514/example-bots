@@ -15,13 +15,16 @@ Small, public JavaScript examples for placing and cancelling orders on the MNX t
 ## Quickstart
 
 ```sh
-git clone <this-repository>
+git clone https://github.com/mnx-markets/example-bots.git
 cd example-bots
 npm install
-export MNX_PRIVATE_KEY=0x...       # fresh testnet key; never reuse a real key
+# generate a fresh throwaway key; never reuse a key that has held real assets
+export MNX_PRIVATE_KEY=$(node -e "console.log(require('ethers').Wallet.createRandom().privateKey)")
 export MNX_INVITE_CODE=...         # get one from the MNX team
 node bots/perp-maker.mjs
 ```
+
+The makers refresh their quotes every 5 seconds.
 
 The first run authenticates the wallet, uses the testnet faucet if necessary, then approves and deposits USDM into MarginBank. The faucet is rate limited, so keep the funded test wallet around while experimenting.
 
