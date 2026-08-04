@@ -20,7 +20,6 @@ cd example-bots
 npm install
 # generate a fresh throwaway key; never reuse a key that has held real assets
 export MNX_PRIVATE_KEY=$(node -e "console.log(require('ethers').Wallet.createRandom().privateKey)")
-export MNX_INVITE_CODE=...         # get one from the MNX team
 node bots/perp-maker.mjs
 ```
 
@@ -35,7 +34,7 @@ Outside US equity hours the default NVDA market goes stale and the perp maker wi
 | Variable | Used by | Default | Meaning |
 | --- | --- | --- | --- |
 | `MNX_PRIVATE_KEY` | all | required | Fresh MegaETH testnet private key. |
-| `MNX_INVITE_CODE` | all | unset | Required for a brand-new account; omit after onboarding if desired. |
+| `MNX_INVITE_CODE` | all | unset | Not needed for API accounts on testnet; set it only if the API responds `invite_required`. |
 | `SYMBOL` | all | bot-specific | Market symbol to trade. |
 | `SIZE` | all | market minimum | Order quantity. |
 | `SPREAD_BPS` | makers | 30 (perp/future), 300 (binary) | Half-spread from the reference value. |
